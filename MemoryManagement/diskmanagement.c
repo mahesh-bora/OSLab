@@ -1,0 +1,95 @@
+#include <stdio.h> 
+#include <sys/stat.h> 
+#include <sys/types.h> 
+#include <stdlib.h> 
+#include <string.h> 
+#include <unistd.h> 
+#include <errno.h> 
+#include <fcntl.h> 
+#include <stdbool.h> 
+#include <dirent.h> 
+#define NAME_MAX 100
+void main(int argc, char *argv) 
+{ 
+int f; 
+int choice, choice1 = 0; 
+char cwd[1024], fname[200]; 
+char dirname[10]; 
+DIR *p; 
+struct dirent *d; 
+do 
+{ 
+printf("\n Enter 1 to create a directory\n Enter 2 to remove a  directory\n Enter 3 to change the directory\n Enter 4 to search.\n"); printf("\n Enter your choice.\n"); 
+scanf("%d", &choice); 
+switch (choice) 
+{ 
+case 1: 
+printf("Enter name of the directory.\n"); 
+scanf("%s", fname); 
+f = mkdir(fname, 0777); 
+if (f == -1) 
+{ 
+printf("\n Cannot create directory.\n"); 
+exit(-1); 
+} 
+else 
+{ 
+printf("\n Directory with name %s is created\n", 
+fname); } 
+break;
+case 2: 
+printf("Enter name of the directory.\n"); 
+scanf("%s", fname); 
+f = rmdir(fname); 
+if (f == -1) 
+{ 
+printf("\n Cannot remove directory.\n"); 
+exit(-1); 
+} 
+else 
+{ 
+printf("\n Directory %s deleted\n", fname); 
+} 
+break; 
+case 3: 
+printf("Enter name of the directory.\n"); 
+scanf("%s", cwd); 
+char buffer[NAME_MAX]; 
+char *path = malloc(100 * sizeof(char)); 
+strcpy(path, cwd); 
+if (chdir(path) == -1) 
+{ 
+fprintf("Error : could not change to directory %s\n", buffer); } 
+else 
+{ 
+getcwd(buffer, NAME_MAX); 
+printf("CWD is %s\n", buffer); 
+printf("Directory changed to %s\n", buffer); 
+}
+free(path); 
+break; 
+case 4: 
+if (getcwd(cwd, sizeof(cwd)) != NULL) 
+{ 
+fprintf(stdout, "Current working directory is %s\n", cwd); } 
+else 
+{ 
+perror("getcwd() error\n"); 
+} 
+p = opendir(cwd); 
+if (p != NULL) 
+{ 
+while (d = readdir(p)) 
+{ 
+printf("\n %s\t", d->d_name); 
+} 
+} 
+else 
+{ 
+perror("Cannot find directory.\n"); 
+exit(-1); 
+} 
+} 
+printf("\nDO you want to continue.\n Prees 1 for YES 0 for NO\n"); scanf("%d", &choice1); 
+} while (choice1 == 1); 
+}

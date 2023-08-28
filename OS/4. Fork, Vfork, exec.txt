@@ -1,0 +1,129 @@
+#include <stdio.h> 
+#include <stdlib.h> 
+#include <unistd.h> 
+#include <sys/types.h> 
+#include <sys/wait.h> 
+int main() 
+{ 
+pid_t child_pid, parent_pid; 
+child_pid = fork();
+if (child_pid < 0) 
+{ 
+perror("Fork failed"); 
+exit(EXIT_FAILURE); 
+} 
+if (child_pid == 0) 
+{ 
+printf("Child process:\n"); 
+printf("Process ID: %d\n", getpid()); 
+printf("Parent Process ID: %d\n\n", getppid()); 
+} 
+else 
+{ 
+parent_pid = getpid(); 
+printf("Parent process:\n"); 
+printf("Process ID: %d\n", parent_pid); 
+printf("Child Process ID: %d\n", child_pid); 
+printf("Waiting for the child process to complete...\n"); printf("\nResuming execution in the parent process\n"); printf("Child process will be terminated if it's still running\n"); wait(NULL); 
+printf("Child process finished\n"); 
+} 
+printf("\n USING VFORK \n"); 
+printf("Before vfork\n"); 
+child_pid = vfork(); 
+if (child_pid < 0) 
+{ 
+perror("vfork failed"); 
+} else if (child_pid == 0) 
+{ 
+printf("Child process\n"); 
+printf("Child Process ID: %d\n", getpid()); 
+printf("Parent Process ID: %d\n\n", getppid()); 
+exit(0);
+} 
+else 
+{ 
+printf("Parent process\n"); 
+printf("Parent Process ID: %d\n", getpid()); 
+printf("Child Process ID: %d\n", child_pid); 
+} 
+printf("After vfork\n\n "); 
+printf("EXECL\n"); 
+execl("/bin/ls", "ls", "-l", NULL); 
+//printf("EXECV\n"); 
+//char *args[] = {"ls","-l",NULL}; 
+//execv("/bin/ls ",args); 
+//execlp("ls","-l",NULL); 
+//execvp("ls",args); 
+return 0; 
+} 
+
+
+execvp
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+int main() {
+    char *args[] = {"ls", "-l", NULL}; // Command-line arguments for the new process
+
+    printf("Before execvp()\n");
+
+    execvp("ls", args);
+
+    // The following code will only be executed if execvp fails
+    perror("execvp failed");
+    return 1;
+}
+
+
+execlp
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+int main() {
+    printf("Before execlp()\n");
+
+    // Replace the current process with the "ls -l" command
+    execlp("ls", "ls", "-l", NULL);
+
+    // The following code will only be executed if execlp fails
+    perror("execlp failed");
+    return 1;
+}
+
+
+execl
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+int main() {
+    printf("Before execl()\n");
+
+    // Replace the current process with the "ls -l" command
+    execl("/bin/ls", "ls", "-l", NULL);
+
+    // The following code will only be executed if execl fails
+    perror("execl failed");
+    return 1;
+}
+
+
+execv
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+int main() {
+    char *args[] = {"ls", "-l", NULL}; // Command-line arguments for the new process
+
+    printf("Before execv()\n");
+
+    // Replace the current process with the "ls -l" command
+    execv("/bin/ls", args);
+
+    // The following code will only be executed if execv fails
+    perror("execv failed");
+    return 1;
+}

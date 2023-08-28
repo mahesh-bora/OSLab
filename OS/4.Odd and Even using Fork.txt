@@ -1,0 +1,43 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+int main() {
+    int numbers[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    int totalNumbers = sizeof(numbers) / sizeof(numbers[0]);
+    
+    pid_t pid = fork();
+
+    if (pid < 0) {
+        perror("Fork failed");
+        exit(EXIT_FAILURE);
+    } else if (pid == 0) {  // Child process
+        int evenCount = 0;
+        int oddCount = 0;
+
+        for (int i = 0; i < totalNumbers; i++) {
+            if (numbers[i] % 2 == 0) {
+                evenCount++;
+            } else {
+                oddCount++;
+            }
+        }
+
+        printf("Child Process - Even count: %d, Odd count: %d\n", evenCount, oddCount);
+    } else {  // Parent process
+        wait(NULL);
+        printf("Parent Process - Child process completed\n");
+
+        // Demonstrate execlp
+        execlp("/bin/ls", "ls", "-l", NULL);
+        printf("This line will only be executed if execlp fails\n");
+
+        // Demonstrate getppid
+        pid_t parentPID = getppid();
+        printf("Parent Process ID: %d\n", parentPID);
+    }
+
+    return 0;
+}

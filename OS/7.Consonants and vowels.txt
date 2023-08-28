@@ -1,0 +1,44 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+
+char list[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h','i','o'};
+int vowelsCount = 0;
+int consonantsCount = 0;
+
+void* countVowels(void* arg) {
+    for (int i = 0; i < sizeof(list) / sizeof(char); i++) {
+        if (list[i] == 'a' || list[i] == 'e' || list[i] == 'i' || list[i] == 'o' || list[i] == 'u') {
+            vowelsCount++;
+        }
+    }
+    
+    pthread_exit(NULL);
+}
+
+void* countConsonants(void* arg) {
+    for (int i = 0; i < sizeof(list) / sizeof(char); i++) {
+        if (list[i] != 'a' && list[i] != 'e' && list[i] != 'i' && list[i] != 'o' && list[i] != 'u') {
+            consonantsCount++;
+        }
+    }
+    
+    pthread_exit(NULL);
+}
+
+int main() {
+    pthread_t threads[2];
+    
+    pthread_create(&threads[0], NULL, countVowels, NULL);
+    pthread_create(&threads[1], NULL, countConsonants, NULL);
+    
+    for (int i = 0; i < 2; i++) {
+        pthread_join(threads[i], NULL);
+    }
+    
+    printf("Number of vowels: %d\n", vowelsCount);
+    printf("Number of consonants: %d\n", consonantsCount);
+    
+    return 0;
+}

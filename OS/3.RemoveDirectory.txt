@@ -1,0 +1,34 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<sys/stat.h>
+#include<sys/types.h>
+int main(int argc, char * argv[])
+{
+	int f ;
+	f=rmdir(argv[1],0777);
+
+	if(f==-1)
+		cannot delete;
+		exit(-1);
+	else
+		argv[1] deleted;
+}
+
+#include<stdio.h>
+#include<sys/stat.h>
+#include<sys/types.h>
+#include<stdlib.h>
+int main(int argc, char * argv[])
+{
+int f ;
+f=rmdir(argv[1],0777);
+if(f==-1)
+{
+printf("\nCannot remove a directory\n");
+exit(-1);
+}
+else
+{
+printf("\nDiectory with name [%s] deleted\n", argv[1]);
+}
+}

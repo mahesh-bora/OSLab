@@ -1,0 +1,54 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+#define NUM_THREADS 2
+#define ARRAY_SIZE 10
+
+int numbers[ARRAY_SIZE] = {12, 3, 5, 8, 17, 6, 20, 11, 4, 9};
+int largest_even = -1;
+int smallest_odd = -1;
+
+void *find_largest_even(void *arg) {
+    for (int i = 0; i < ARRAY_SIZE; i++) {
+        if (numbers[i] % 2 == 0 && numbers[i] > largest_even) {
+            largest_even = numbers[i];
+        }
+    }
+    pthread_exit(NULL);
+}
+
+void *find_smallest_odd(void *arg) {
+    for (int i = 0; i < ARRAY_SIZE; i++) {
+        if (numbers[i] % 2 != 0 && (smallest_odd == -1 || numbers[i] < smallest_odd)) {
+            smallest_odd = numbers[i];
+        }
+    }
+    pthread_exit(NULL);
+}
+
+int main() {
+    pthread_t threads[NUM_THREADS];
+    int rc;
+
+    rc = pthread_create(&threads[0], NULL, find_largest_even, NULL);
+    if (rc) {
+        perror("Error creating thread for largest even");
+        exit(-1);
+    }
+
+    rc = pthread_create(&threads[1], NULL, find_smallest_odd, NULL);
+    if (rc) {
+        perror("Error creating thread for smallest odd");
+        exit(-1);
+    }
+
+    for (int i = 0; i < NUM_THREADS; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    printf("Largest even number: %d\n", largest_even);
+    printf("Smallest odd number: %d\n", smallest_odd);
+
+    pthread_exit(NULL);
+}

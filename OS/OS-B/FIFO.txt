@@ -1,0 +1,67 @@
+#include<stdio.h>
+
+void FIFO(int frames[], int n, int pages[], int m)
+{
+    int index = 0;
+    int page_faults = 0;
+
+    printf("Frames:\n");
+    for (int i = 0; i < m; i++)
+    {
+        int found = 0;
+
+        for (int j = 0; j < n; j++)
+        {
+            if (frames[j] == pages[i])
+            {
+                found = 1;
+                break;
+            }
+        }
+
+        if (found == 0)
+        {
+            frames[index] = pages[i];
+            index = (index + 1) % n;
+            page_faults++;
+        }
+
+        printf("Step %d: ", i + 1);
+        for (int j = 0; j < n; j++)
+        {
+            if (frames[j] == -1)
+                printf("[ ] ");
+            else
+                printf("[%d] ", frames[j]);
+        }
+        printf("\n");
+    }
+
+    printf("\nTotal number of page faults = %d\n", page_faults);
+    printf("\nTotal number of page hits = %d\n", m-page_faults);
+    printf("\n");
+}
+
+int main()
+{
+    int n, m;
+
+    printf("Enter the number of frames: ");
+    scanf("%d", &n);
+
+    printf("Enter the number of pages: ");
+    scanf("%d", &m);
+
+    int frames[n], pages[m];
+
+    printf("Enter the page reference string:\n");
+    for (int i = 0; i < m; i++)
+        scanf("%d", &pages[i]);
+
+    for (int i = 0; i < n; i++)
+        frames[i] = -1;
+
+    FIFO(frames, n, pages, m);
+
+    return 0;
+}

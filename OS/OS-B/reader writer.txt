@@ -1,0 +1,84 @@
+#include <stdio.h> 
+#include <stdlib.h> 
+#include <unistd.h> 
+#include <semaphore.h> 
+#include <fcntl.h> 
+int main() { 
+sem_t *read_mutex; 
+sem_t *write_mutex; 
+int data; 
+// Open or create the semaphores 
+read_mutex = sem_open("read_mutex", O_CREAT, 0644, 0); // Initialize with 0 write_mutex = sem_open("write_mutex", O_CREAT, 0644, 1); 
+if (read_mutex == SEM_FAILED || write_mutex == SEM_FAILED) { perror("Failed to create semaphores"); 
+exit(EXIT_FAILURE); 
+} 
+while (1) { 
+// Reader acquires the read_mutex semaphore 
+sem_wait(read_mutex); 
+// Reading the shared data 
+FILE *file = fopen("shared.txt", "r"); 
+if (file == NULL) { 
+perror("Failed to open shared file"); 
+exit(EXIT_FAILURE); 
+}
+fscanf(file, "%d", &data); 
+fclose(file); 
+printf("Reader Process: Read data = %d\n", data); 
+// Reader releases the write_mutex semaphore sem_post(write_mutex); 
+// Sleep for a while before reading again 
+sleep(1); 
+} 
+// Close and unlink the semaphores 
+sem_close(read_mutex); 
+sem_close(write_mutex); 
+sem_unlink("read_mutex"); 
+sem_unlink("write_mutex"); 
+return 0; 
+} 
+writer.c 
+#include <stdio.h> 
+#include <stdlib.h> 
+#include <unistd.h> 
+#include <semaphore.h> 
+#include <fcntl.h> 
+int main() { 
+sem_t *read_mutex; 
+sem_t *write_mutex; 
+int data = 1; 
+// Open or create the semaphores
+read_mutex = sem_open("read_mutex", O_CREAT, 0644, 0); // Initialize with 0 write_mutex = sem_open("write_mutex", O_CREAT, 0644, 1); 
+if (read_mutex == SEM_FAILED || write_mutex == SEM_FAILED) { perror("Failed to create semaphores"); 
+exit(EXIT_FAILURE); 
+} 
+while (1) { 
+// Writer acquires the write_mutex semaphore 
+sem_wait(write_mutex); 
+// Writing data to the shared resource 
+FILE *file = fopen("shared.txt", "w"); 
+if (file == NULL) { 
+perror("Failed to open shared file"); 
+exit(EXIT_FAILURE); 
+} 
+fprintf(file, "%d\n", data); 
+fclose(file); 
+printf("Writer Process: Wrote data = %d\n", data); 
+data++; 
+// Writer releases the read_mutex semaphore 
+sem_post(read_mutex); 
+// Sleep for a while before writing again 
+sleep(1); 
+} 
+// Close and unlink the semaphores 
+sem_close(read_mutex); 
+sem_close(write_mutex); 
+sem_unlink("read_mutex");
+sem_unlink("write_mutex"); 
+return 0; 
+} 
+
+
+gcc writer.c -o writer -lpthread -lrt
+./writer
+
+gcc reader.c -o reader -pthread -lrt
+./reader

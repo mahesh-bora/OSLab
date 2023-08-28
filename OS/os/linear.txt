@@ -1,0 +1,55 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<unistd.h>
+#include<pthread.h>
+ 
+#define max_thread 4
+#define max 16 
+
+  int a[max]={ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
+  int key =10; 
+  int current=0; 
+  int flag; 
+  
+  void * search(){ 
+ 
+  int i;
+    for(i=current*(max/max_thread);i<(current+1)*(max/max_thread);i++){ 
+    if(a[i]==key){ 
+    flag=1;  
+    }  
+   
+    } 
+    current++;
+ 
+  }  
+  
+  
+  
+int main(){ 
+
+pthread_t tid[max_thread];
+int i;
+
+for(i=0;i<max_thread;i++){ 
+pthread_create(&tid[i],NULL,search,NULL);
+
+}
+
+for(i=0;i<max_thread;i++){ 
+pthread_join(tid[i],NULL);
+
+} 
+
+if(flag==1){ 
+printf("Key found\n");
+}
+else{ 
+printf("key not found");
+}
+
+
+return 0;
+
+}

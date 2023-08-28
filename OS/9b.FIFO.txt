@@ -1,0 +1,58 @@
+#include <stdio.h>
+
+int main() {
+    int incomingStream[] = {4, 1, 2, 4, 5};
+    int pageFaults = 0;
+    int frames = 3;
+    int m, n, s, pages;
+
+    // Calculate the number of pages in the incoming stream
+    pages = sizeof(incomingStream) / sizeof(incomingStream[0]);
+
+    printf(" Incoming \t Frame 1 \t Frame 2 \t Frame 3 ");
+
+    int temp[frames]; // Array to represent frames
+
+    // Initialize frames array with -1 (no page loaded initially)
+    for (m = 0; m < frames; m++) {
+        temp[m] = -1;
+    }
+
+    // Iterate through the incoming page requests
+    for (m = 0; m < pages; m++) {
+        s = 0;
+
+        // Check if the current page is already in memory
+        for (n = 0; n < frames; n++) {
+            if (incomingStream[m] == temp[n]) {
+                s++;
+                pageFaults--; // No page fault if the page is already in memory
+            }
+        }
+
+        pageFaults++; // Increment page fault count
+
+        if ((pageFaults <= frames) && (s == 0)) {
+            // If there are empty frames or the current page is not in memory, add it
+            temp[m] = incomingStream[m];
+        } else if (s == 0) {
+            // Replace the page using the Optimal algorithm
+            temp[(pageFaults - 1) % frames] = incomingStream[m];
+        }
+
+        // Print the current state of memory and incoming page requests
+        printf("\n");
+        printf("%d\t\t\t", incomingStream[m]);
+        for (n = 0; n < frames; n++) {
+            if (temp[n] != -1)
+                printf(" %d\t\t\t", temp[n]);
+            else
+                printf(" - \t\t\t");
+        }
+    }
+
+    // Print the total number of page faults
+    printf("\nTotal Page Faults:\t%d\n", pageFaults);
+
+    return 0;
+}

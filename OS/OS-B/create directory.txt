@@ -1,0 +1,26 @@
+#include<stdio.h>
+#include<sys/stat.h>
+#include<sys/types.h>
+#include<stdlib.h>
+
+void main(int argc, char* argv[])
+{
+int f,i;
+printf("argc=%d",argc);
+for(i=1; i<=argc-1; i++)
+{
+f=mkdir(argv[i], 0777);
+if(f==-1)
+{
+printf("\nCannot create a directory\n");
+exit(-1);
+}
+else
+{
+printf("\ndirectory with name [%s] created\n",argv[i]);
+}
+}
+}
+
+gcc create.c
+./a.out OS1 OS2 OS3

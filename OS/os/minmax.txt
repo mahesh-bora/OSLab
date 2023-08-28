@@ -1,0 +1,59 @@
+#include<stdio.h> 
+#include<stdlib.h>
+#include<pthread.h> 
+#include<unistd.h> 
+#include<string.h>
+#include<time.h> 
+#include<limits.h>
+
+#define max 200
+#define max_thread 20
+
+int a[max]; 
+int min_value = 501;
+int max_value = 0;
+ 
+ void * find(void *arg){
+ int id = (int *) arg; 
+ 
+ for(int i=id*(max/max_thread);i<(id+1)*(max/max_thread);i++){ 
+ if(a[i]<min_value){ 
+ min_value=a[i];
+ } 
+ if(a[i]>max_value){ 
+ max_value=a[i];
+ }
+ } 
+ pthread_exit(NULL);
+ }
+ 
+
+int main(){  
+
+
+pthread_t tid[max_thread]; 
+int i;
+for(i=0;i<max;i++){ 
+a[i]=rand() % 500;
+} 
+
+for(i=0;i<max;i++){ 
+printf("%d\t",a[i]);
+}
+
+
+clock_t start_time = clock(); 
+for(i=0;i<max_thread;i++){ 
+pthread_create(&tid[i],NULL,find,(void *)i);
+} 
+
+for(i=0;i<max_thread;i++){ 
+pthread_join(tid[i],NULL);
+}
+
+clock_t end_time = clock(); 
+double time = (double) (end_time-start_time)/CLOCKS_PER_SEC;
+printf("\nTotal time required is %f\n",time); 
+printf("min_value : %d\n",min_value);
+printf("max_vaue : %d\n",max_value);
+}

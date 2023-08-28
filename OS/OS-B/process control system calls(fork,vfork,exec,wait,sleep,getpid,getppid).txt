@@ -1,0 +1,43 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+int main() {
+
+
+   pid_t child = fork();
+
+   if (child == 0) {
+      printf("\nChild Process\nMy PID : %d\nMy PPID : %d\n",getpid(),getppid());
+      sleep(4);
+      _exit(0);
+   } else if (child > 0) {
+      printf("\nFork\nParent Process\nMy PID : %d\nMy PPID : %d\nMy Child PID : %d\n",getpid(),getppid(),child);
+      wait(NULL);
+      printf("Child terminated\n");
+   } else {
+      printf("Fork Failed\n");
+   }
+
+
+   pid_t vchild = vfork();
+   if (vchild == 0) {
+      printf("\nVfork\nChild Process\nMy PID : %d\nMy PPID : %d\n",getpid(),getppid());
+   } else if (vchild > 0) {
+      printf("\nParent Process\nMy PID : %d\nMy PPID : %d\nMy Child PID : %d\n",getpid(),getppid(),vchild);
+   } else {
+      printf("VFork Failed\n");
+   }
+
+   
+   execl("/bin/ls","ls","-l",NULL);
+
+   char *argv[]={"ls","-l",NULL};
+   execv("/bin/ls",argv);
+
+   execlp("ls","-l",NULL);
+   execvp("ls",argv);
+   
+   return 0;
+}

@@ -1,0 +1,88 @@
+#include <stdio.h>
+
+void LRU(int frames[], int n, int pages[], int m)
+{
+    int page_faults = 0;
+    int index = 0;
+    int counter = 0;
+    int used[n];
+
+    for (int i = 0; i < n; i++)
+    {
+        frames[i] = -1;
+        used[i] = 0;
+    }
+
+    printf("Frames:\n");
+    for (int i = 0; i < m; i++)
+    {
+        int found = 0;
+        for (int j = 0; j < n; j++)
+        {
+            if (frames[j] == pages[i])
+            {
+                found = 1;
+                used[j] = ++counter;
+                break;
+            }
+        }
+
+        if (found == 0)
+        {
+            int lru_index = 0;
+            int min_count = used[0];
+
+            for (int j = 1; j < n; j++)
+            {
+                if (used[j] < min_count)
+                {
+                    min_count = used[j];
+                    lru_index = j;
+                }
+            }
+
+            frames[lru_index] = pages[i];
+            used[lru_index] = ++counter;
+            page_faults++;
+        }
+
+        printf("Step %d: ", i + 1);
+        for (int j = 0; j < n; j++)
+        {
+            if (frames[j] == -1)
+                printf("[ ] ");
+            else
+                printf("[%d] ", frames[j]);
+        }
+        printf("\n");
+    }
+
+    printf("\nTotal number of page faults = %d\n", page_faults);
+    printf("Total number of page hits = %d\n", m - page_faults);
+    printf("\n");
+}
+ 
+int main()
+{
+    int n, m;
+
+    printf("Enter the number of frames: ");
+    scanf("%d", &n);
+
+    printf("Enter the number of pages: ");
+    scanf("%d", &m);
+
+    int frames[n], pages[m];
+
+    printf("Enter the page reference string:\n");
+    for (int i = 0; i < m; i++)
+        scanf("%d", &pages[i]);
+
+    for (int i = 0; i < n; i++)
+        frames[i] = -1;
+
+    LRU(frames, n, pages, m);
+     
+
+    return 0;
+}

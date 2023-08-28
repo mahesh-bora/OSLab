@@ -1,0 +1,48 @@
+#include<stdio.h> 
+#include<fcntl.h> 
+#include<sys/types.h> 
+#include<string.h> 
+#include<unistd.h> 
+#include<sys/stat.h> 
+#include<pwd.h> 
+#include<grp.h> 
+#include<stdlib.h> 
+void stat_use() 
+{ 
+char fname[10]; 
+struct stat p; 
+printf("\nEnter filename:"); 
+scanf("\n%s",fname); 
+stat(fname,&p); 
+printf("\nProminent file details are:\n"); 
+printf("\tFilename: %s\n", fname); 
+printf("\tPermissions: %o\n", p.st_mode &(S_IRWXU | S_IRWXG | 
+S_IRWXO)); 
+} 
+printf("\tlinks: %ld\n", p.st_nlink); 
+printf("\tSize: %ld\n", p.st_size); 
+printf("\tGroup id: %d\n", p.st_gid); 
+printf("\tTime change last status: %ld", p.st_ctime); 
+void fstat_use() 
+{ 
+int fd,e; 
+char fname[10]; 
+struct stat p; 
+printf("\nEnter filename:"); scanf("\n%s",fname); 
+fd= open(fname, O_RDONLY,777); e=fstat(fd,&p); 
+printf("\ne=%d\n",e); 
+printf("\tFilename: %s\n", fname); 
+printf("\tPermissions: %o\n", p.st_mode &(S_IRWXU | S_IRWXG | 
+S_IRWXO)); 
+} 
+printf("\tlinks: %ld\n", p.st_nlink); 
+printf("\tSize: %ld\n", p.st_size); 
+printf("\tGroup id: %d\n", p.st_gid); 
+printf("\tTime change last status: %ld", p.st_ctime); 
+int main() 
+{ 
+} 
+stat_use(); 
+fstat_use(); 
+return 0;
+}

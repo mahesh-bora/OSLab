@@ -1,0 +1,98 @@
+#include <stdio.h> 
+#include <stdbool.h> 
+#define NUM_RESOURCES 3 
+#define NUM_PROCESSES 5 
+bool allocate_resources(int allocated[][NUM_RESOURCES], int available[], int  request[], int process) { 
+for (int i = 0; i < NUM_RESOURCES; i++) { 
+if (request[i] > available[i]) { 
+return false; 
+} 
+} 
+// Try allocating the requested resources 
+for (int i = 0; i < NUM_RESOURCES; i++) { 
+available[i] -= request[i]; 
+allocated[process][i] += request[i]; 
+} 
+return true; 
+} 
+void deallocate_resources(int allocated[][NUM_RESOURCES], int available[], int  process) { 
+for (int i = 0; i < NUM_RESOURCES; i++) {
+available[i] += allocated[process][i]; 
+allocated[process][i] = 0; 
+} 
+} 
+bool is_safe_state(int allocated[][NUM_RESOURCES], int available[], int  need[][NUM_RESOURCES], int work[]) { 
+bool finish[NUM_PROCESSES] = { false }; 
+int safe_sequence[NUM_PROCESSES]; 
+int count = 0; 
+// Copy available resources to the work array 
+for (int i = 0; i < NUM_RESOURCES; i++) { 
+work[i] = available[i]; 
+} 
+// Find an unallocated process whose resource needs can be satisfied while (count < NUM_PROCESSES) { 
+bool found = false; 
+for (int i = 0; i < NUM_PROCESSES; i++) { 
+if (!finish[i]) { 
+bool can_allocate = true; 
+for (int j = 0; j < NUM_RESOURCES; j++) { 
+if (need[i][j] > work[j]) { 
+can_allocate = false; 
+break; 
+} 
+} 
+if (can_allocate) { 
+for (int j = 0; j < NUM_RESOURCES; j++) { 
+work[j] += allocated[i][j]; 
+} 
+finish[i] = true; 
+safe_sequence[count] = i; 
+count++; 
+found = true;
+} 
+} 
+} 
+// If no process can be allocated, the system is in an unsafe state if (!found) { 
+return false; 
+} 
+} 
+// If all processes have been allocated, the system is in a safe state printf("Safe sequence: "); 
+for (int i = 0; i < NUM_PROCESSES; i++) { 
+printf("P%d ", safe_sequence[i]); 
+} 
+printf("\n"); 
+return true; 
+} 
+void recover_deadlock(int allocated[][NUM_RESOURCES], int available[], int  need[][NUM_RESOURCES]) { 
+int request[NUM_RESOURCES]; 
+int process; 
+printf("Enter the process number that caused the deadlock: "); scanf("%d", &process); 
+printf("Enter the resource request for process P%d:\n", process); for (int i = 0; i < NUM_RESOURCES; i++) { 
+scanf("%d", &request[i]); 
+} 
+if (allocate_resources(allocated, available, request, process)) { int work[NUM_RESOURCES]; 
+if (is_safe_state(allocated, available, need, work)) { 
+printf("Recovery successful. Deadlock resolved.\n");
+} else { 
+printf("Recovery unsuccessful. Deadlock persists.\n"); 
+deallocate_resources(allocated, available, process); 
+} 
+} else { 
+printf("Resource request exceeds available resources. Deadlock persists.\n"); } 
+} 
+int main() { 
+int allocated[NUM_PROCESSES][NUM_RESOURCES] = { { 0, 1, 0 }, { 2, 0, 0 }, { 3,  0, 2 }, { 2 ,1 ,1},{0 ,0 ,2}}; 
+int max[NUM_PROCESSES][NUM_RESOURCES] = { { 7, 5, 3 }, { 3, 2, 2 }, { 9, 0, 2 },  { 2, 2, 2}, { 4, 3, 3} }; 
+int available[NUM_RESOURCES] = { 1, 3, 2 }; 
+int need[NUM_PROCESSES][NUM_RESOURCES]; 
+// Calculate the resource need for each process 
+for (int i = 0; i < NUM_PROCESSES; i++) { 
+for (int j = 0; j < NUM_RESOURCES; j++) { 
+need[i][j] = max[i][j] - allocated[i][j]; 
+} 
+} 
+if (is_safe_state(allocated, available, need, available)) { 
+printf("The system is in a safe state. No deadlock detected.\n"); } else { 
+printf("The system is in an unsafe state. Deadlock detected.\n"); recover_deadlock(allocated, available, need); 
+} 
+return 0; 
+}

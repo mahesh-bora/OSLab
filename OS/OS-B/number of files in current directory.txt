@@ -1,0 +1,38 @@
+#include<stdio.h>
+#include<dirent.h>
+#include<sys/types.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<errno.h>
+
+main(int argc, char* argv[])
+{
+char cwd[1024];
+char dirname[10];
+DIR *p;
+struct dirent *d;
+
+if (getcwd(cwd,sizeof(cwd))!=NULL)
+{
+fprintf(stdout,"Current working dir:%s\n",cwd);
+}
+else
+{
+perror("getcwd() error");
+}
+
+p=opendir(cwd);
+if(p==NULL)
+{
+perror("Cannot find directory");
+exit(-1);
+}
+
+while(d=readdir(p))
+{
+printf("%s\t",d->d_name);
+}
+}
+
+gcc list.c
+./a.out Desktop

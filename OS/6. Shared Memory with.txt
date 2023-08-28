@@ -1,0 +1,115 @@
+A.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
+#define MAX_INTS 100
+
+int main() {
+    // Read integers from the file named "inpfile"
+    FILE *inpfile = fopen("inpfile", "r");
+    if (inpfile == NULL) {
+        perror("Error opening inpfile");
+        return 1;
+    }
+
+    int integers[MAX_INTS];
+    int count = 0;
+    while (fscanf(inpfile, "%d", &integers[count]) == 1) {
+        count++;
+    }
+    fclose(inpfile);
+
+    // Create a shared memory segment for the integer array
+    key_t key = ftok("shared_mem_key", 65);
+    int shmid = shmget(key, MAX_INTS * sizeof(int), IPC_CREAT | 0666);
+    int *shared_integers = (int*) shmat(shmid, NULL, 0);
+
+    // Write integers into the shared array
+    for (int i = 0; i < count; i++) {
+        shared_integers[i] = integers[i];
+    }
+
+    // Create a shared memory segment for the synchronization variable
+    key_t sync_key = ftok("sync_mem_key", 66);
+    int sync_shmid = shmget(sync_key, sizeof(int), IPC_CREAT | 0666);
+    int *done = (int*) shmat(sync_shmid, NULL, 0);
+
+    // Set done to 1 to indicate completion
+    *done = 1;
+
+    // Detach from shared memory
+    shmdt(shared_integers);
+    shmdt(done);
+
+    return 0;
+}
+
+B.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
+#define MAX_INTS 100
+
+int main() {
+    // Wait a few seconds before starting (as per your requirement)
+    sleep(5);
+
+    // Create a shared memory segment for the synchronization variable
+    key_t sync_key = ftok("sync_mem_key", 66);
+    int sync_shmid = shmget(sync_key, sizeof(int), 0666);
+    int *done = (int*) shmat(sync_shmid, NULL, 0);
+
+    // Wait until A.c finishes writing
+    while (*done != 1) {
+        printf("Waiting for A.c to finish...\n");
+        sleep(1);
+    }
+
+    // Create a shared memory segment for the integer array
+    key_t key = ftok("shared_mem_key", 65);
+    int shmid = shmget(key, MAX_INTS * sizeof(int), 0666);
+    int *shared_integers = (int*) shmat(shmid, NULL, 0);
+
+    // Sort the integers (using a simple bubble sort in this example)
+    for (int i = 0; i < MAX_INTS - 1; i++) {
+        for (int j = 0; j < MAX_INTS - i - 1; j++) {
+            if (shared_integers[j] > shared_integers[j + 1]) {
+                int temp = shared_integers[j];
+                shared_integers[j] = shared_integers[j + 1];
+                shared_integers[j + 1] = temp;
+            }
+        }
+    }
+
+    // Write the sorted integers to the "outfile"
+    FILE *outfile = fopen("outfile", "w");
+    if (outfile == NULL) {
+        perror("Error opening outfile");
+        return 1;
+    }
+    for (int i = 0; i < MAX_INTS; i++) {
+        fprintf(outfile, "%d\n", shared_integers[i]);
+    }
+    fclose(outfile);
+
+    // Detach from shared memory
+    shmdt(shared_integers);
+    shmdt(done);
+
+    // Delete shared memory segments
+    shmctl(shmid, IPC_RMID, NULL);
+    shmctl(sync_shmid, IPC_RMID, NULL);
+
+    return 0;
+}
+
+gcc a.c -o a
+./a

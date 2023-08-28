@@ -1,0 +1,22 @@
+#include<stdio.h>
+#include<sys/stat.h>
+#include<sys/types.h>
+#include<stdlib.h>
+
+void main(int argc, char* argv[])
+{
+int f;
+f=rmdir(argv[1], 0777);
+if(f==-1)
+{
+printf("\nCannot remove a directory\n");
+exit(-1);
+}
+else
+{
+printf("\ndirectory with name [%s] removed\n",argv[1]);
+}
+}
+
+gcc remove.c
+./a.out OS2

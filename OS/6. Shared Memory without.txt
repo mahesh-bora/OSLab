@@ -1,0 +1,116 @@
+A_1.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/wait.h>
+
+#define MAX_INTS 100
+#define SHARED_KEY 1234
+
+int main() {
+    int shmid;
+    int *shared_array;
+    FILE *input_file;
+    int num_ints = 0;
+
+    shmid = shmget(SHARED_KEY, MAX_INTS * sizeof(int), IPC_CREAT | 0666);
+    if (shmid == -1) {
+        perror("shmget");
+        exit(1);
+    }
+
+    shared_array = (int*) shmat(shmid, NULL, 0);
+    if (shared_array == (int*) -1) {
+        perror("shmat");
+        exit(1);
+    }
+
+    input_file = fopen("inpfile.txt", "r");
+    if (input_file == NULL) {
+        perror("fopen");
+        exit(1);
+    }
+
+    while (fscanf(input_file, "%d", &shared_array[num_ints]) != EOF) {
+        num_ints++;
+        if (num_ints >= MAX_INTS)
+            break;
+    }
+
+    shmdt(shared_array);
+
+    fclose(input_file);
+
+    return 0;
+}
+
+B_1.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
+#define MAX_INTS 100
+#define SHARED_KEY 1234
+
+int main() {
+    int shmid;
+    int *shared_array;
+    int num_ints = 0;
+
+    sleep(5);
+
+    shmid = shmget(SHARED_KEY, MAX_INTS * sizeof(int), 0666);
+    if (shmid == -1) {
+        perror("shmget");
+        exit(1);
+    }
+
+    shared_array = (int*) shmat(shmid, NULL, 0);
+    if (shared_array == (int*) -1) {
+        perror("shmat");
+        exit(1);
+    }
+
+    while (shared_array[num_ints] != 0) {
+        num_ints++;
+        if (num_ints >= MAX_INTS)
+            break;
+    }
+
+    for (int i = 0; i < num_ints - 1; i++) {
+        for (int j = 0; j < num_ints - i - 1; j++) {
+            if (shared_array[j] > shared_array[j + 1]) {
+                int temp = shared_array[j];
+                shared_array[j] = shared_array[j + 1];
+                shared_array[j + 1] = temp;
+            }
+        }
+    }
+
+    FILE *output_file = fopen("outfile.txt", "w");
+    if (output_file == NULL) {
+        perror("fopen");
+        exit(1);
+    }
+
+    for (int i = 0; i < num_ints; i++) {
+        fprintf(output_file, "%d\n", shared_array[i]);
+    }
+
+    fclose(output_file);
+
+    shmdt(shared_array);
+
+    shmctl(shmid, IPC_RMID, NULL);
+
+    return 0;
+}
+
+gcc a.c -o a
+./a

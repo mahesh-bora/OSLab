@@ -1,0 +1,42 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<sys/stat.h>
+#include<sys/types.h>
+
+int main(int argc, char * argv[])
+{
+	int f;
+	printf("%d",argc);
+	for(int i =1; i<argc;i++)
+	{
+		f=mkdir(argv[i],0777);
+		if(f==-1)
+			printf("cannot create");
+			exit(-1);
+		else
+			printf("[%s]created",argv[i]);
+	}
+}
+
+#include<stdio.h>
+#include<sys/stat.h>
+#include<sys/types.h>
+#include<stdlib.h>
+int main(int argc, char * argv[])
+{
+int f ;
+printf("%d",argc);
+for(int i=1;i<argc;i++)
+{
+f=mkdir(argv[i],0777);
+if(f==-1)
+{
+printf("\nCannot create a directory\n");
+exit(-1);
+}
+else
+{
+printf("\nDiectory with name [%s] created\n", argv[i]);
+}
+}
+}
